@@ -1,25 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
-import type { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY! // importante usar service role no backend
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
 );
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+export async function GET(request: Request) {
   try {
-    const cotacaoId = req.query.cotacao_id as string;
+    const { searchParams } = new URL(request.url);
+    const cotacaoId = searchParams.get("cotacao_id");
 
     if (!cotacaoId) {
-      return res.status(400).json({ error: "cotacao_id é obrigatório" });
+      return NextResponse.json(
+        { error: "cotacao_id é obrigatório" },
+        { status: 400 }
+      );
     }
 
-    // =========================
-    // BUSCA PREÇOS + RELAÇÕES
-    // =========================
     const { data: precos, error } = await supabase
       .from("precos")
       .select(`
@@ -38,18 +36,12 @@ export default async function handler(
 
     if (error) {
       console.error(error);
-      return res.status(500).json({ error: error.message });
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    // =========================
-    // MAPAS DE RESULTADO
-    // =========================
     const produtosMap = new Map<string, any>();
     const fornecedoresMap = new Map<string, any>();
 
-    // =========================
-    // PROCESSAMENTO
-    // =========================
     precos?.forEach((p: any) => {
       const produto = Array.isArray(p.produto) ? p.produto[0] : p.produto;
       const fornecedor = Array.isArray(p.fornecedor)
@@ -58,7 +50,6 @@ export default async function handler(
 
       if (!produto || !fornecedor) return;
 
-      // ---------- PRODUTO ----------
       if (!produtosMap.has(produto.id)) {
         produtosMap.set(produto.id, {
           id: produto.id,
@@ -79,7 +70,6 @@ export default async function handler(
         };
       }
 
-      // ---------- FORNECEDOR ----------
       if (!fornecedoresMap.has(fornecedor.id)) {
         fornecedoresMap.set(fornecedor.id, {
           id: fornecedor.id,
@@ -88,15 +78,15 @@ export default async function handler(
       }
     });
 
-    // =========================
-    // RESPOSTA FINAL
-    // =========================
-    return res.status(200).json({
+    return NextResponse.json({
       produtos: Array.from(produtosMap.values()),
       fornecedores: Array.from(fornecedoresMap.values()),
     });
-  } catch (err: any) {
+  } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "Erro interno" });
+    return NextResponse.json(
+      { error: "Erro interno" },
+      { status: 500 }
+    );
   }
 }
