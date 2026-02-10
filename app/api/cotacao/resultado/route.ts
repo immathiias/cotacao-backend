@@ -19,7 +19,7 @@ export async function GET(req: Request) {
       produto:produtos!inner(id, nome),
       fornecedor:fornecedores!inner(id, nome)
     `)
-    .eq("cotacao_id", cotacaoId);
+    .eq("cotacao_uuid", cotacaoId);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
