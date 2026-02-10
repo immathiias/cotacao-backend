@@ -25,21 +25,21 @@ export async function GET(req: Request) {
     );
   }
 
-  const { data: precos, error } = await supabase
-    .from("precos")
-    .select(`
-      preco,
-      produto:produtos!inner(
-        id,
-        nome,
-        cotacao_id
-      ),
-      fornecedor:fornecedores(
-        id,
-        nome
-      )
-    `)
-    .eq("produto.cotacao_id", cotacaoId);
+const { data: precos, error } = await supabase
+  .from("precos")
+  .select(`
+    preco,
+    produto:produtos!inner(
+      id,
+      nome,
+      cotacao_id
+    ),
+    fornecedor:fornecedores!inner(
+      id,
+      nome
+    )
+  `)
+  .eq("produto.cotacao_id", cotacaoId);
 
   if (error) {
     return NextResponse.json(
