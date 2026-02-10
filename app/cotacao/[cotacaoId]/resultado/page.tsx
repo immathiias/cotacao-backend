@@ -6,7 +6,6 @@ import { useParams } from "next/navigation";
 export default function ResultadoCotacao() {
   const { cotacaoId } = useParams();
   const [dados, setDados] = useState<any>(null);
-  const [fornecedorSelecionado, setFornecedorSelecionado] = useState("");
 
   useEffect(() => {
     fetch(`/api/cotacao/resultado?cotacao_id=${cotacaoId}`)
@@ -18,51 +17,43 @@ export default function ResultadoCotacao() {
     return <div className="p-6 text-white">Carregando...</div>;
   }
 
-  const produtosFiltrados = fornecedorSelecionado
-    ? dados.produtos.filter(
-        (p: any) => p.vencedor.fornecedor_id === fornecedorSelecionado
-      )
-    : dados.produtos;
-
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-6">
       <h1 className="text-2xl font-bold mb-6">
         📊 Resultado da Cotação
       </h1>
 
-      {/* SELECT FORNECEDOR */}
-      <select
-        className="bg-zinc-800 p-3 rounded mb-6"
-        value={fornecedorSelecionado}
-        onChange={e => setFornecedorSelecionado(e.target.value)}
-      >
-        <option value="">🔎 Ver todos</option>
-        {dados.fornecedores.map((f: any) => (
-          <option key={f.id} value={f.id}>
-            {f.nome}
-          </option>
-        ))}
-      </select>
-
-      {/* LISTA DE PRODUTOS */}
-      <div className="space-y-4">
-        {produtosFiltrados.map((p: any) => (
+      <div className="space-y-6">
+        {dados.produtos.map((p: any) => (
           <div
             key={p.id}
             className="bg-zinc-800 p-4 rounded-xl border border-zinc-700"
           >
-            <h2 className="font-semibold text-lg mb-2">
+            <h2 className="font-semibold text-lg mb-3">
               {p.nome}
             </h2>
 
-            <div className="flex justify-between items-center">
-              <span className="text-green-400 font-bold">
-                🏆 {p.vencedor.fornecedor_nome}
-              </span>
+            <div className="space-y-1">
+              {p.precos.map((preco: any) => {
+                const vencedor =
+                  preco.fornecedor_id === p.vencedor.fornecedor_id;
 
-              <span className="text-xl text-green-400 font-bold">
-                R$ {p.menor_preco.toFixed(2)}
-              </span>
+                return (
+                  <div
+                    key={preco.fornecedor_id}
+                    className={`flex justify-between ${
+                      vencedor ? "text-green-400 font-bold" : "text-zinc-300"
+                    }`}
+                  >
+                    <span>
+                      {preco.fornecedor_nome}
+                      {vencedor && " — 🏆 VENCEDOR"}
+                    </span>
+
+                    <span>R$ {preco.preco.toFixed(2)}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         ))}

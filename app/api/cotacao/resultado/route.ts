@@ -35,7 +35,6 @@ export async function GET(request: Request) {
       .eq("produto.cotacao_id", cotacaoId);
 
     if (error) {
-      console.error(error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -56,10 +55,17 @@ export async function GET(request: Request) {
           nome: produto.nome,
           menor_preco: null,
           vencedor: null,
+          precos: [], // 🔥 AQUI ESTÁ A DIFERENÇA
         });
       }
 
       const prod = produtosMap.get(produto.id);
+
+      prod.precos.push({
+        fornecedor_id: fornecedor.id,
+        fornecedor_nome: fornecedor.nome,
+        preco: p.preco,
+      });
 
       if (prod.menor_preco === null || p.preco < prod.menor_preco) {
         prod.menor_preco = p.preco;
@@ -83,7 +89,6 @@ export async function GET(request: Request) {
       fornecedores: Array.from(fornecedoresMap.values()),
     });
   } catch (err) {
-    console.error(err);
     return NextResponse.json(
       { error: "Erro interno" },
       { status: 500 }
