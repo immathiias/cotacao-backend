@@ -66,7 +66,7 @@ export default function FornecedorPage() {
         mensagem += `• ${p.nome}: R$ ${valor.toFixed(2)}%0A`;
       });
 
-      const telefone = "5599999999999"; // <<< SEU WHATSAPP
+      const telefone = "5584981086835"; // <<< SEU WHATSAPP
       const url = `https://wa.me/${telefone}?text=${mensagem}`;
 
       // abre WhatsApp
