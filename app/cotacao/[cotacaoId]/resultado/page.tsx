@@ -27,7 +27,7 @@ export default function ResultadoCotacao() {
         📊 Resultado da Cotação
       </h1>
 
-      <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-8 sm:grid-cols-1 lg:grid-cols-2 p-8">
         {dados.produtos.map((p: any) => (
           <div
             key={p.id}
