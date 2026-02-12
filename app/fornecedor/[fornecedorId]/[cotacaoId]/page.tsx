@@ -17,18 +17,26 @@ interface Props {
 export default async function Page({ params }: Props) {
   const { fornecedorId, cotacaoId } = params;
 
-  // 🔐 Validação REAL no banco
+  // 🔎 Busca fornecedor
   const { data, error } = await supabase
     .from("fornecedores")
-    .select("id")
+    .select("id, cotacao_id")
     .eq("id", fornecedorId)
-    .eq("cotacao_id", cotacaoId)
-    .single();
+    .limit(1);
 
-  if (error || !data) {
-    notFound(); // retorna 404 real
+  // ❌ Se deu erro ou não encontrou
+  if (error || !data || data.length === 0) {
+    return notFound();
   }
 
+  const fornecedor = data[0];
+
+  // ❌ Se cotação não corresponde
+  if (fornecedor.cotacao_id !== cotacaoId) {
+    return notFound();
+  }
+
+  // ✅ Tudo certo
   return (
     <FornecedorClient
       fornecedorId={fornecedorId}
