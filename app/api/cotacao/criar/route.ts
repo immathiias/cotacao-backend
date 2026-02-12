@@ -27,16 +27,17 @@ export async function POST(req: Request) {
     const fornecedorId = uuid();
 
     await supabase.from("fornecedores").insert({
-      id: fornecedorId,
+      id: fornecedorId, // ✅ CORRETO
       nome: f.nome,
       telefone: f.telefone,
-      ativo: true
+      cotacao_id: cotacaoId,
+      primeiro_acesso: false, // começa FALSE
+      senha: null
     });
 
     const link = `https://serido-cotacao-backend.vercel.app/fornecedor/${fornecedorId}/${cotacaoId}`;
     links.push({ fornecedor: f.nome, link });
 
-    // envia WhatsApp
     await enviarWhatsapp(f.telefone, link);
   }
 
@@ -49,7 +50,7 @@ async function enviarWhatsapp(telefone: string, link: string) {
     {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.WHATSAPP_TOKEN}`,
+        Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -66,4 +67,3 @@ async function enviarWhatsapp(telefone: string, link: string) {
     }
   );
 }
-

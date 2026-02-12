@@ -85,9 +85,9 @@ export default function FornecedorPage() {
 
   if (modo === "primeiro") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-900 text-white">
-        <div className="bg-zinc-800 p-8 rounded-xl w-96 space-y-4">
-          <h2 className="text-xl font-bold">🔐 Primeiro acesso</h2>
+      <div className="min-h-screen! flex! items-center! justify-center! bg-zinc-900! text-white!">
+        <div className="bg-zinc-800! p-8! rounded-xl! w-96! space-y-4!">
+          <h2 className="text-xl! font-bold!">🔐 Primeiro acesso</h2>
 
           <input
             type="password"
@@ -99,12 +99,12 @@ export default function FornecedorPage() {
           <input
             type="password"
             placeholder="Confirmar senha"
-            className="w-full p-2 rounded bg-zinc-700"
+            className="w-full! p-2! rounded! bg-zinc-700!"
             onChange={(e) => setConfirmaSenha(e.target.value)}
           />
 
           <button
-            className="w-full bg-green-600 p-2 rounded"
+            className="w-full! bg-green-600! p-2 rounded!"
             onClick={async () => {
               if (senha !== confirmaSenha) return alert("Senhas não coincidem");
 
@@ -129,19 +129,19 @@ export default function FornecedorPage() {
 
   if (modo === "login") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-zinc-900 text-white">
-        <div className="bg-zinc-800 p-8 rounded-xl w-96 space-y-4">
-          <h2 className="text-xl font-bold">🔑 Login</h2>
+      <div className="min-h-screen! flex! items-center! justify-center! bg-zinc-900! text-white!">
+        <div className="bg-zinc-800! p-8! rounded-xl! w-96! space-y-4!">
+          <h2 className="text-xl! font-bold!">🔑 Login</h2>
 
           <input
             type="password"
             placeholder="Senha"
-            className="w-full p-2 rounded bg-zinc-700"
+            className="w-full! p-2! rounded! bg-zinc-700!"
             onChange={(e) => setSenha(e.target.value)}
           />
 
           <button
-            className="w-full bg-blue-600 p-2 rounded"
+            className="w-full! bg-blue-600! p-2! rounded!"
             onClick={async () => {
               const res = await fetch("/api/fornecedor/login", {
                 method: "POST",
