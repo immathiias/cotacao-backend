@@ -4,7 +4,7 @@ import FornecedorClient from "./FornecedorClient";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
 );
 
 interface Props {
@@ -17,24 +17,22 @@ interface Props {
 export default async function Page({ params }: Props) {
   const { fornecedorId, cotacaoId } = params;
 
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("cotacao_fornecedores")
     .select("*")
     .eq("fornecedor_id", fornecedorId)
     .eq("cotacao_id", cotacaoId)
-    .single();
+    .maybeSingle(); // ← MELHOR que single()
 
-  if (!data) {
+  if (error || !data) {
     return notFound();
   }
 
-  const fornecedor = data[0];
-
-  // ❌ Se cotação não corresponde
-  if (fornecedor.cotacao_id !== cotacaoId) {
-    return notFound();
-  }
-
-  // ✅ Tudo certo
-  return <FornecedorClient fornecedorId={fornecedorId} cotacaoId={cotacaoId} />;
+  // ✅ Se encontrou o vínculo correto
+  return (
+    <FornecedorClient
+      fornecedorId={fornecedorId}
+      cotacaoId={cotacaoId}
+    />
+  );
 }
