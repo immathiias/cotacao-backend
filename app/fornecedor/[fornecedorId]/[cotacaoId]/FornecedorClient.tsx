@@ -23,6 +23,22 @@ export default function FornecedorClient({
   const [loading, setLoading] = useState(true);
   const [enviado, setEnviado] = useState(false);
 
+  useEffect(() => {
+  async function verificarAcesso() {
+    const res = await fetch(`/api/fornecedor/status?fornecedor_id=${fornecedorId}`);
+    const data = await res.json();
+
+    if (!data.senha) {
+      setModo("primeiro");
+    } else {
+      setModo("login");
+    }
+  }
+
+  verificarAcesso();
+}, [fornecedorId]);
+
+
   // 🔒 Verifica se já enviou
   useEffect(() => {
     const enviadoAntes = localStorage.getItem(
