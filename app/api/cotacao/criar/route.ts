@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
   await supabase.from("cotacoes").insert({
     id: cotacaoId,
-    nome
+    nome,
   });
 
   // salvar produtos
@@ -17,29 +17,54 @@ export async function POST(req: Request) {
       id: uuid(),
       cotacao_id: cotacaoId,
       nome: nomeProduto,
-      ativo: true
+      ativo: true,
     });
   }
 
   const links = [];
 
-  for (const f of fornecedores) {
-    const fornecedorId = uuid();
+for (const f of fornecedores) {
 
-    await supabase.from("fornecedores").insert({
-      id: fornecedorId, // ✅ CORRETO
-      nome: f.nome,
-      telefone: f.telefone,
-      cotacao_id: cotacaoId,
-      primeiro_acesso: false, // começa FALSE
-      senha: null
-    });
+  // 1️⃣ Verifica se fornecedor já existe pelo telefone
+  let { data: fornecedorExistente } = await supabase
+    .from("fornecedores")
+    .select("*")
+    .eq("telefone", f.telefone)
+    .single();
 
-    const link = `https://serido-cotacao-backend.vercel.app/fornecedor/${fornecedorId}/${cotacaoId}`;
-    links.push({ fornecedor: f.nome, link });
+  let fornecedorId;
 
-    await enviarWhatsapp(f.telefone, link);
+  if (!fornecedorExistente) {
+    // cria fornecedor
+    const { data: novoFornecedor } = await supabase
+      .from("fornecedores")
+      .insert({
+        nome: f.nome,
+        telefone: f.telefone,
+        primeiro_acesso: true,
+        senha: null
+      })
+      .select()
+      .single();
+
+    fornecedorId = novoFornecedor.id;
+  } else {
+    fornecedorId = fornecedorExistente.id;
   }
+
+  // 2️⃣ Cria vínculo na tabela relacional
+  await supabase.from("cotacao_fornecedores").insert({
+    cotacao_id: cotacaoId,
+    fornecedor_id: fornecedorId,
+    respondeu: false
+  });
+
+  // 3️⃣ Gera link único
+  const link = `https://serido-cotacao-backend.vercel.app/fornecedor/${fornecedorId}/${cotacaoId}`;
+  links.push({ fornecedor: f.nome, link });
+
+  await enviarWhatsapp(f.telefone, link);
+}
 
   return Response.json({ cotacaoId, links });
 }
@@ -51,7 +76,7 @@ async function enviarWhatsapp(telefone: string, link: string) {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.WHATSAPP_TOKEN}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         messaging_product: "whatsapp",
@@ -61,9 +86,9 @@ async function enviarWhatsapp(telefone: string, link: string) {
           body:
             `Olá! 👋\n\n` +
             `A Rede Seridó Sobrinho solicita sua cotação.\n\n` +
-            `Acesse o link abaixo e informe apenas os preços:\n\n${link}`
-        }
-      })
-    }
+            `Acesse o link abaixo e informe apenas os preços:\n\n${link}`,
+        },
+      }),
+    },
   );
 }
