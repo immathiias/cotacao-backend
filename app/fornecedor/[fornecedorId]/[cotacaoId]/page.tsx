@@ -4,35 +4,34 @@ import FornecedorClient from "./FornecedorClient";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!,
 );
 
-interface Props {
-  params: {
-    fornecedorId: string;
-    cotacaoId: string;
-  };
-}
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ fornecedorId: string; cotacaoId: string }>;
+}) {
+  const { fornecedorId, cotacaoId } = await params;
 
-export default async function Page({ params }: Props) {
-  const { fornecedorId, cotacaoId } = params;
+  console.log("Fornecedor:", fornecedorId);
+  console.log("Cotacao:", cotacaoId);
 
   const { data, error } = await supabase
     .from("cotacao_fornecedores")
-    .select("*")
+    .select("id")
     .eq("fornecedor_id", fornecedorId)
     .eq("cotacao_id", cotacaoId)
-    .maybeSingle(); // ← MELHOR que single()
+    .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    console.error("Erro Supabase:", error);
     return notFound();
   }
 
-  // ✅ Se encontrou o vínculo correto
-  return (
-    <FornecedorClient
-      fornecedorId={fornecedorId}
-      cotacaoId={cotacaoId}
-    />
-  );
+  if (!data) {
+    return notFound();
+  }
+
+  return <FornecedorClient fornecedorId={fornecedorId} cotacaoId={cotacaoId} />;
 }
